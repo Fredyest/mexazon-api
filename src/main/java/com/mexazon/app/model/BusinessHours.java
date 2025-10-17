@@ -16,10 +16,10 @@ public class BusinessHours {
     private Business business;
 
     @Column(name = "time_in")
-    private String timeIn;
+    private LocalTime timeIn;
 
     @Column(name = "time_out")
-    private String timeOut;
+    private LocalTime timeOut;
 
     @Column(name = "is_working", nullable = false)
     private boolean isWorking;
