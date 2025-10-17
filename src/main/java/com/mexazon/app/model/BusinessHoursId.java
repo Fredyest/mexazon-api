@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name="business_hours")
-public class BusinessHours {
+public class BusinessHoursId {
 
     @EmbeddedId
     private BusinessId id;
