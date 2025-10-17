@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "businesses")
 public class Business {
-
+//No estan duplicandose los ID?
     @Id
     @Column(name = "business_id")
     private Long id;
