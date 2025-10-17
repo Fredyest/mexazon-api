@@ -39,4 +39,4 @@ public class User {
 	@OneToMany(mappedBy = "author_user_id", cascade = CascadeType.ALL)
     private List<Post> posts;
 	
-}
+}  
