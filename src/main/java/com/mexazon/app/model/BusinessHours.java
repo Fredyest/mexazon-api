@@ -1,5 +1,28 @@
 package com.mexazon.app.model;
 
+import java.time.LocalTime;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="business_hours")
 public class BusinessHours {
+
+    @EmbeddedId
+    private BusinessHoursId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("businessId") 
+    @JoinColumn(name = "business_id")
+    private Business business;
+
+    @Column(name = "time_in")
+    private String timeIn;
+
+    @Column(name = "time_out")
+    private String timeOut;
+
+    @Column(name = "is_working", nullable = false)
+    private boolean isWorking;
+
 
 }
