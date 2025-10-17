@@ -1,12 +1,12 @@
 package com.mexazon.app.model;
 
-impor jakarta.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "business")
+@Table(name = "businesses")
 public class Business {
 
-	@Id
+    @Id
     @Column(name = "business_id")
     private Long id;
 

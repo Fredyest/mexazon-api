@@ -1,28 +1,26 @@
 package com.mexazon.app.model;
 
-import java.time.LocalTime;
-import jakarta.persistence.*;
+import java.io.Serializable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
-@Entity
-@Table(name="business_hours")
-public class BusinessHoursId {
+@Embeddable
+public class BusinessHoursId implements Serializable {
 
-    @EmbeddedId
-    private BusinessId id;
+    @Column(name = "business_id")
+    private Long businessId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("businessId") 
-    @JoinColumn(name = "business_id")
-    private Business business;
+    @Enumerated(EnumType.STRING) // Mapea el ENUM de SQL como String en Java
+    @Column(name = "day_of_week", length = 3, nullable = false)
+    private DayOfWeek dayOfWeek;
+    
+    // Es necesario tener un constructor sin argumentos, getters, setters,
+    // y sobreescribir equals() y hashCode() para que funcione correctamente.
+}
 
-    @Column(name = "time_in")
-    private LocalTime timeIn;
-
-    @Column(name = "time_out")
-    private LocalTime timeOut;
-
-    @Column(name = "is_working", nullable = false)
-    private boolean isWorking;
-
-
+// Un ENUM para los días de la semana
+enum DayOfWeek {
+    Mon, Tue, Wed, Thu, Fri, Sat, Sun
 }

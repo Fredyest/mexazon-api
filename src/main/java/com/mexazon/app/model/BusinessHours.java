@@ -8,7 +8,7 @@ import jakarta.persistence.*;
 public class BusinessHours {
 
     @EmbeddedId
-    private BusinessId id;
+    private BusinessHoursId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("businessId") 
@@ -16,10 +16,10 @@ public class BusinessHours {
     private Business business;
 
     @Column(name = "time_in")
-    private LocalTime timeIn;
+    private String timeIn;
 
     @Column(name = "time_out")
-    private LocalTime timeOut;
+    private String timeOut;
 
     @Column(name = "is_working", nullable = false)
     private boolean isWorking;
