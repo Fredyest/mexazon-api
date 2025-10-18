@@ -31,7 +31,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
     private Integer postId;
-
     // Autor del post -> users.user_id
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_user_id", nullable = false, updatable = false)

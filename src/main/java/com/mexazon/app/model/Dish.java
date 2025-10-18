@@ -12,12 +12,12 @@ public class Dish {
     
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_id", nullable = false,
-                foreignKey = @ForeignKey(name = "fk_dishes_business"))
+                foreignKey = @ForeignKey(name = "fk_dish_business"))
 	private Business businessId;
     
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false,
-                foreignKey = @ForeignKey(name = "fk_dishes_category"))
+                foreignKey = @ForeignKey(name = "fk_dish_category"))
 	private MenuCategory categoryId;
     
 	@Column(name = "dish_name", length = 100, nullable = false)

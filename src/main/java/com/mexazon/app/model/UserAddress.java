@@ -9,8 +9,15 @@ public class UserAddress {
     @Id
     @Column(name = "user_id")
     private Long userId;
-    @Column(name = "postal_code", length = 10, nullable = false)
-    private String postalCode;
+    
+    @OneToOne
+    @MapsId 
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "postal_code", referencedColumnName = "postal_code")
+    private PostalCodeCatalog postalCode;
     @Column(name = "colonia", length = 100, nullable = false)
     private String colonia;
     @Column(name = "street", length = 100, nullable = false)
@@ -23,17 +30,12 @@ public class UserAddress {
     public Long getUserId() {
         return userId;
     }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     // postalCode
-    public String getPostalCode() {
+    public PostalCodeCatalog getPostalCode() {
         return postalCode;
     }
 
-    public void setPostalCode(String postalCode) {
+    public void setPostalCode(PostalCodeCatalog postalCode) {
         this.postalCode = postalCode;
     }
 

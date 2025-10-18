@@ -52,4 +52,5 @@ public class PostalCodeId implements Serializable {
     public int hashCode() {
         return postalCode.hashCode() + colonia.hashCode();
     }
+ 
 }

@@ -18,4 +18,22 @@ public class PostPhoto {
 
     @Column(name = "photo_order")
     private Short photoOrder;
+
+	public String getPhotoUrl() {
+		return photoUrl;
+	}
+
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
+	}
+
+	public Short getPhotoOrder() {
+		return photoOrder;
+	}
+
+	public void setPhotoOrder(Short photoOrder) {
+		this.photoOrder = photoOrder;
+	}
+    
+    
 }

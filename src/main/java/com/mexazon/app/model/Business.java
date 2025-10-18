@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "businesses")
-public class Business {
+public class Business{
 //No estan duplicandose los ID?
 
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
+	 	@Id
 	    @Column(name = "business_id")
 	    private Long businessId;
 
@@ -17,6 +16,7 @@ public class Business {
 
 	    // 🔗 Relación: cada negocio pertenece a un usuario
 	    @OneToOne
+	    @MapsId 
 	    @JoinColumn(name = "user_id", nullable = false, unique = true)
 	    private User user;
 
@@ -37,4 +37,4 @@ public class Business {
 	        return user;
 	    }
 
-	}
+}
