@@ -9,10 +9,17 @@ public class Dish {
     @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long dishId;
-    @Column(name = "business_id", nullable = false)
-	private Long businessId;
-	@Column(name = "category_id", nullable = false)
-	private Long categoryId;
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "business_id", nullable = false,
+                foreignKey = @ForeignKey(name = "fk_dishes_business"))
+	private Business businessId;
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "category_id", nullable = false,
+                foreignKey = @ForeignKey(name = "fk_dishes_category"))
+	private MenuCategory categoryId;
+    
 	@Column(name = "dish_name", length = 100, nullable = false)
 	private String dishName;
 	@Column(name = "description", length = 255, nullable = false)
@@ -28,25 +35,17 @@ public class Dish {
         return dishId;
     }
 
-    public void setDishId(Long dishId) {
-        this.dishId = dishId;
-    }
-
     // businessId
     public Long getBusinessId() {
-        return businessId;
-    }
-
-    public void setBusinessId(Long businessId) {
-        this.businessId = businessId;
+        return businessId.getBusinessId();
     }
 
     // categoryId
     public Long getCategoryId() {
-        return categoryId;
+        return categoryId.getCategoryId();
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setCategoryId(MenuCategory categoryId) {
         this.categoryId = categoryId;
     }
 

@@ -18,10 +18,6 @@ public class MenuCategory {
         return categoryId;
     }
 
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
-
     // categoryName
     public String getCategoryName() {
         return categoryName;

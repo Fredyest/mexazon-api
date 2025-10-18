@@ -17,10 +17,6 @@ public class PostalCodeCatalog {
         return id;
     }
 
-    public void setId(PostalCodeId id) {
-        this.id = id;
-    }
-
     // alcaldia
     public String getAlcaldia() {
         return alcaldia;

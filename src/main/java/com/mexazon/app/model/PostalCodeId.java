@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 @Embeddable
 public class PostalCodeId implements Serializable {
 
-    @Column(name = "postal_code", length = 10, nullable = false)
+	private static final long serialVersionUID = 1L;
+
+	@Column(name = "postal_code", length = 10, nullable = false)
     private String postalCode;
 
     @Column(name = "colonia", length = 100, nullable = false)
