@@ -1,4 +1,4 @@
-package com.mexazon.app.service;
+package com.mexazon.app.service.impl;
 
 import com.mexazon.app.model.PostalCodeCatalog;
 import java.util.List;
