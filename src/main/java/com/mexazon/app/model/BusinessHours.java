@@ -58,5 +58,12 @@ public class BusinessHours {
 		return business;
 	}
 
+	 public void setId(BusinessHoursId id) {
+        this.id = id;
+    }
+
+    public void setBusiness(Business business) {
+        this.business = business;
+    }
 
 }

@@ -1,7 +1,6 @@
 package com.mexazon.app.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -60,7 +59,7 @@ public class Post {
     public Business getReviewedBusiness() { return reviewedBusiness; }
 
     public int getRating() { return rating; }
-    public void setRating(Byte rating) { this.rating = rating; }
+    public void setRating(int rating) { this.rating = rating; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
