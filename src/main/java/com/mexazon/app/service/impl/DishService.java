@@ -1,5 +1,10 @@
 package com.mexazon.app.service.impl;
+import java.util.List;
 
-public class DishService {
+import com.mexazon.app.dto.DishDto;
 
+public interface DishService {
+
+	
+	 
 }
