@@ -1,5 +1,7 @@
 package com.mexazon.app.model;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -19,7 +21,10 @@ public class Business{
 	    @MapsId 
 	    @JoinColumn(name = "user_id", nullable = false, unique = true)
 	    private User user;
-
+	    
+	    @OneToMany(mappedBy = "reviewedBusiness", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
+		private List<Post> reviews;
+	    
 	    // --- Getters & Setters ---
 	    public Long getBusinessId() {
 	        return businessId;
