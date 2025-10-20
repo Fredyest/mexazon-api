@@ -6,24 +6,26 @@ import jakarta.persistence.*;
 @Table(name = "users_address")
 public class UserAddress {
 
-    @Id
-    @Column(name = "user_id")
-    private Long userId;
-    
-    @OneToOne
-    @MapsId 
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "postal_code", referencedColumnName = "postal_code")
-    private PostalCodeCatalog postalCode;
-    @Column(name = "colonia", length = 100, nullable = false)
-    private String colonia;
-    @Column(name = "street", length = 100, nullable = false)
-    private String street;
-    @Column(name = "number", length = 10, nullable = false)
-    private String number;
+	 @Id
+	    private Long userId;
+
+	    @OneToOne(fetch = FetchType.LAZY)
+	    @MapsId
+	    @JoinColumn(name = "user_id", nullable = false, unique = true)
+	    private User user;
+
+	    @ManyToOne(fetch = FetchType.LAZY)
+	    @JoinColumns({
+	        @JoinColumn(name = "postal_code", referencedColumnName = "postal_code"),
+	        @JoinColumn(name = "colonia", referencedColumnName = "colonia")
+	    })
+	    private PostalCodeCatalog postalCode;
+
+	    @Column(name = "street", length = 100, nullable = false)
+	    private String street;
+
+	    @Column(name = "number", length = 10, nullable = false)
+	    private String number;
 
     // Getters y Setters
     // userId
@@ -39,14 +41,6 @@ public class UserAddress {
         this.postalCode = postalCode;
     }
 
-    // colonia
-    public String getColonia() {
-        return colonia;
-    }
-
-    public void setColonia(String colonia) {
-        this.colonia = colonia;
-    }
 
     // street
     public String getStreet() {

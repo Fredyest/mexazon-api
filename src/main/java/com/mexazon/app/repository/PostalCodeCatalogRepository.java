@@ -1,6 +1,8 @@
 package com.mexazon.app.repository;
 
 import com.mexazon.app.model.PostalCodeCatalog;
+import com.mexazon.app.model.PostalCodeId;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,23 +21,19 @@ import java.util.List;
  * Plus, we can define custom methods by following JPA naming conventions.
  */
 @Repository
-public interface PostalCodeCatalogRepository extends JpaRepository<PostalCodeCatalog, Long> {
+public interface PostalCodeCatalogRepository extends JpaRepository<PostalCodeCatalog, PostalCodeId> {
 
-    /**
-     * Custom method to find all postal code records that match a given postal code.
-     * Example: findByCodigoPostal("64000")
-     */
-    List<PostalCodeCatalog> findByCodigoPostal(String codigoPostal);
+	// ✅ Find all by postal code (inside the embedded ID)
+    List<PostalCodeCatalog> findAllByIdPostalCode(String postalCode);
 
-    /**
-     * Custom method to find all postal codes that belong to a specific alcaldía.
-     * Example: findByAlcaldia("Monterrey")
-     */
-    List<PostalCodeCatalog> findByAlcaldia(String alcaldia);
+    // ✅ Find all by colonia (inside the embedded ID)
+    List<PostalCodeCatalog> findAllByIdColonia(String colonia);
 
-    /**
-     * Custom method to find all postal codes within a specific colonia.
-     * Example: findByColonia("Centro")
-     */
-    List<PostalCodeCatalog> findByColonia(String colonia);
+    // ✅ Find one by both postal code and colonia (composite key)
+    PostalCodeCatalog findByIdPostalCodeAndIdColonia(String postalCode, String colonia);
+
+    // ✅ Find by alcaldia
+    List<PostalCodeCatalog> findAllByAlcaldia(String alcaldia);
+
+
 }

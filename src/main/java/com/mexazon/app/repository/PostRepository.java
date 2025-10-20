@@ -3,18 +3,19 @@ package com.mexazon.app.repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.mexazon.app.model.Business;
 import com.mexazon.app.model.Post;
 import com.mexazon.app.model.User;
-
-public interface PostRepository extends JpaRepository<Post, Integer>{
+@Repository
+public interface PostRepository extends JpaRepository<Post, Long>{
 	   
     // Buscar todos los posts de un autor específico
     List<Post> findByAuthor(User author);
@@ -45,10 +46,6 @@ public interface PostRepository extends JpaRepository<Post, Integer>{
     @EntityGraph(attributePaths = {"author", "reviewedBusiness"})
     @Query("SELECT p FROM Post p WHERE p.reviewedBusiness.businessId = :businessId")
     List<Post> findAllByBusinessWithAuthor(@Param("businessId") Long businessId);
-
-    // --- Buscar por palabra en descripción ---
-    @Query("SELECT p FROM Post p WHERE LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Post> searchByDescription(@Param("keyword") String keyword);
 
     // --- Obtener todos los posts recientes (últimos N días) ---
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :startDate ORDER BY p.createdAt DESC")

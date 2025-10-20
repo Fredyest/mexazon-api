@@ -13,12 +13,12 @@ public class Dish {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "business_id", nullable = false,
                 foreignKey = @ForeignKey(name = "fk_dish_business"))
-	private Business businessId;
+	private Business business;
     
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false,
                 foreignKey = @ForeignKey(name = "fk_dish_category"))
-	private MenuCategory categoryId;
+	private MenuCategory category;
     
 	@Column(name = "dish_name", length = 100, nullable = false)
 	private String dishName;
@@ -37,16 +37,16 @@ public class Dish {
 
     // businessId
     public Long getBusinessId() {
-        return businessId.getBusinessId();
+        return business.getBusinessId();
     }
 
     // categoryId
     public Long getCategoryId() {
-        return categoryId.getCategoryId();
+        return category.getCategoryId();
     }
 
     public void setCategoryId(MenuCategory categoryId) {
-        this.categoryId = categoryId;
+        this.category = categoryId;
     }
 
     // dishName

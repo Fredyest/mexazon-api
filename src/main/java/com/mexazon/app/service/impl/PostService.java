@@ -35,7 +35,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Post getById(Integer id) {
+    public Post getById(Long id) {
         return postRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Post no encontrado con id: " + id));
     }
@@ -51,7 +51,7 @@ public class PostService {
     }
 
     // ---------- UPDATE ----------
-    public Post update(Integer id, int rating, String description) {
+    public Post update(Long id, int rating, String description) {
         Post existing = getById(id);
         existing.setRating(rating);
         existing.setDescription(description);
@@ -59,7 +59,7 @@ public class PostService {
     }
 
     // ---------- DELETE ----------
-    public void delete(Integer id) {
+    public void delete(Long id) {
         if (!postRepository.existsById(id)) {
             throw new IllegalArgumentException("Post no encontrado con id: " + id);
         }

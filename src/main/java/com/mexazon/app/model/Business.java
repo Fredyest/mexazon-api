@@ -25,6 +25,14 @@ public class Business{
 	    @OneToMany(mappedBy = "reviewedBusiness", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
 		private List<Post> reviews;
 	    
+	    
+	    public static Business fromUser(User u) {
+	        Business b = new Business();
+	        b.user = u;        // @MapsId will copy u.id into business_id on save
+	        b.isActive = true; // or false, your default
+	        return b;
+	    }
+	    
 	    // --- Getters & Setters ---
 	    public Long getBusinessId() {
 	        return businessId;

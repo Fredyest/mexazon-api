@@ -21,7 +21,7 @@ public class User {
 	private String userType;
 	@Column(name = "email", length = 100, nullable = false, unique = true)
 	private String email;
-	@Column(name = "password", length = 255, nullable = false)
+	@Column(name = "password_hash", length = 255, nullable = false)
 	private String passwordHash;
 	@Column(name = "phone", length = 100, nullable = false, unique = true)
 	private String phone;
@@ -30,7 +30,7 @@ public class User {
 	@Column(name = "description", length = 255, nullable = true)
 	private String description;
 	@CreationTimestamp
-	@Column(name = "created_at", nullable = false, updatable = false)
+	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
 	private LocalDateTime createdAt;
 	@Column(name = "avatar_url", length = 255, nullable = true)
 	private String avatar;

@@ -12,19 +12,11 @@ public class PostalCodeCatalog {
     private String alcaldia;
 
     // Getters y Setters
-    // alcaldia
-    public PostalCodeId getId() {
-        return id;
-    }
+    public PostalCodeId getId() { return id; }
+    public void setId(PostalCodeId id) { this.id = id; }
 
-    // alcaldia
-    public String getAlcaldia() {
-        return alcaldia;
-    }
-
-    public void setAlcaldia(String alcaldia) {
-        this.alcaldia = alcaldia;
-    }
+    public String getAlcaldia() { return alcaldia; }
+    public void setAlcaldia(String alcaldia) { this.alcaldia = alcaldia; }
 
 }
 

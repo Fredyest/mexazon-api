@@ -29,7 +29,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
-    private Integer postId;
+    private Long postId;
     // Autor del post -> users.user_id
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_user_id", nullable = false, updatable = false)
@@ -52,7 +52,7 @@ public class Post {
     private LocalDateTime createdAt;
 
     // --- Getters & Setters ---
-    public Integer getPostId() { return postId; }
+    public Long getPostId() { return postId; }
 
     public User getAuthor() { return author; }
 
