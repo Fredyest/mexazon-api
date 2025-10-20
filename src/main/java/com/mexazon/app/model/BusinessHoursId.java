@@ -5,6 +5,9 @@ import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
 
 @Embeddable
 public class BusinessHoursId implements Serializable {
@@ -14,15 +17,15 @@ public class BusinessHoursId implements Serializable {
     @Column(name = "business_id", nullable = false)
     private Long businessId;
 
-    // 0 = Lunes, 6 = Domingo (por ejemplo)
+    @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false)
-    private Integer dayOfWeek;
+    private WeekDay  dayOfWeek;
 
     // ---------- Constructores ----------
     public BusinessHoursId() {
     }
 
-    public BusinessHoursId(Long businessId, Integer dayOfWeek) {
+    public BusinessHoursId(Long businessId, WeekDay dayOfWeek) {
         this.businessId = businessId;
         this.dayOfWeek = dayOfWeek;
     }
@@ -36,11 +39,11 @@ public class BusinessHoursId implements Serializable {
         this.businessId = businessId;
     }
 
-    public Integer getDayOfWeek() {
+    public WeekDay getDayOfWeek() {
         return dayOfWeek;
     }
 
-    public void setDayOfWeek(Integer dayOfWeek) {
+    public void setDayOfWeek(WeekDay dayOfWeek) {
         this.dayOfWeek = dayOfWeek;
     }
 

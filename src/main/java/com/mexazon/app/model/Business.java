@@ -19,7 +19,7 @@ public class Business{
 	    // 🔗 Relación: cada negocio pertenece a un usuario
 	    @OneToOne
 	    @MapsId 
-	    @JoinColumn(name = "user_id", nullable = false, unique = true)
+	    @JoinColumn(name = "business_id", nullable = false, unique = true)
 	    private User user;
 	    
 	    @OneToMany(mappedBy = "reviewedBusiness", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)

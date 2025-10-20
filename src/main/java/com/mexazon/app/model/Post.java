@@ -48,8 +48,8 @@ public class Post {
     private String description;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt;
+	@Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+	private LocalDateTime createdAt;
 
     // --- Getters & Setters ---
     public Long getPostId() { return postId; }

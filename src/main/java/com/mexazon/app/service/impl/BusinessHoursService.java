@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mexazon.app.model.Business;
 import com.mexazon.app.model.BusinessHours;
 import com.mexazon.app.model.BusinessHoursId;
+import com.mexazon.app.model.WeekDay;
 import com.mexazon.app.repository.BusinessHoursRepository;
 
 @Service
@@ -22,14 +23,14 @@ public class BusinessHoursService {
     }
 
     // ---------- CREATE ----------
-    public BusinessHours create(Business business, int dayOfWeek,
+    public BusinessHours create(Business business, 	WeekDay day,
                                 LocalTime timeIn, LocalTime timeOut, boolean isWorking) {
 
         if (isWorking && timeIn != null && timeOut != null && !timeOut.isAfter(timeIn)) {
             throw new IllegalArgumentException("time_out debe ser posterior a time_in");
         }
 
-        BusinessHoursId id = new BusinessHoursId(business.getBusinessId(), dayOfWeek);
+        BusinessHoursId id = new BusinessHoursId(business.getBusinessId(), day);
         if (repository.existsById(id)) {
             throw new IllegalArgumentException("Ya existe horario para ese negocio y día");
         }
@@ -47,7 +48,7 @@ public class BusinessHoursService {
     // ---------- READ ----------
     @Transactional(readOnly = true)
     public BusinessHours get(Long businessId, int dayOfWeek) {
-        return repository.findById(new BusinessHoursId(businessId, dayOfWeek))
+        return repository.findById(new BusinessHoursId(businessId, WeekDay.values()[dayOfWeek]))
             .orElseThrow(() -> new IllegalArgumentException("Horario no encontrado"));
     }
 
@@ -87,7 +88,7 @@ public class BusinessHoursService {
 
     // ---------- DELETE ----------
     public void delete(Long businessId, int dayOfWeek) {
-        BusinessHoursId id = new BusinessHoursId(businessId, dayOfWeek);
+        BusinessHoursId id = new BusinessHoursId(businessId, WeekDay.values()[dayOfWeek]);
         if (!repository.existsById(id)) {
             throw new IllegalArgumentException("Horario no encontrado");
         }
