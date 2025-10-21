@@ -34,6 +34,10 @@ public interface PostalCodeCatalogRepository extends JpaRepository<PostalCodeCat
 
     // ✅ Find by alcaldia
     List<PostalCodeCatalog> findAllByAlcaldia(String alcaldia);
+    
+
+    
+ 
 
 
 }

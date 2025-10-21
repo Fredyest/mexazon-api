@@ -1,23 +1,56 @@
 package com.mexazon.app.service.impl;
 
 import com.mexazon.app.model.PostalCodeCatalog;
+import com.mexazon.app.model.PostalCodeId;
+import com.mexazon.app.repository.PostalCodeCatalogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Service interface that defines high-level operations
- * for working with postal code data.
- */
-public interface PostalCodeCatalogService {
+@Service
+public class PostalCodeCatalogService {
 
-    // Get all postal codes
-    List<PostalCodeCatalog> getAll();
+    @Autowired
+    private PostalCodeCatalogRepository repository;
 
-    // Find postal codes by postal code number
-    List<PostalCodeCatalog> getByCodigoPostal(String codigoPostal);
+    public List<PostalCodeCatalog> findAll() {
+        return repository.findAll();
+    }
 
-    // Find postal codes by alcaldía
-    List<PostalCodeCatalog> getByAlcaldia(String alcaldia);
+    public Optional<PostalCodeCatalog> findById(String postalCode, String colonia) {
+    	PostalCodeId id= new PostalCodeId();
+    	id.setPostalCode(postalCode);
+    	id.setColonia(colonia);
+    	return repository.findById(id);
+    }
 
-    // Find postal codes by colonia
-    List<PostalCodeCatalog> getByColonia(String colonia);
+    public PostalCodeCatalog save(PostalCodeCatalog postalCodeCatalog) {
+        // Si quieres agregar validaciones, hazlo aquí.
+        return repository.save(postalCodeCatalog);
+    }
+
+    public PostalCodeCatalog update(String postalCode, String colonia, PostalCodeCatalog updatedPostalCodeCatalog) {
+    	PostalCodeId id= new PostalCodeId();
+    	id.setPostalCode(postalCode);
+    	id.setColonia(colonia);
+    	Optional<PostalCodeCatalog> existing = repository.findById(id);
+        if (existing.isPresent()) {
+            PostalCodeCatalog entity = existing.get();
+            entity.setAlcaldia(updatedPostalCodeCatalog.getAlcaldia());
+            // agrega más setters según el modelo
+            return repository.save(entity);
+        } else {
+            throw new RuntimeException("PostalCodeCatalog no encontrado con id " + id);
+        }
+    }
+
+    public void delete(String postalCode, String colonia) {
+    	PostalCodeId id= new PostalCodeId();
+    	id.setPostalCode(postalCode);
+    	id.setColonia(colonia);
+        repository.deleteById(id);
+    }
 }
+
