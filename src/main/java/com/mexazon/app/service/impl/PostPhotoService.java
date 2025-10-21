@@ -55,7 +55,6 @@ public class PostPhotoService {
         }
 
         PostPhoto photo = new PostPhoto();
-        photo.setPostId(post);
         photo.setPhotoUrl(photoUrl);
         photo.setPhotoOrder(photoOrder);
 
@@ -118,7 +117,6 @@ public class PostPhotoService {
      * @throws IllegalArgumentException si el nuevo orden ya está en uso por otra foto
      */
     public PostPhoto update(Long photoId, String photoUrl, Short photoOrder) {
-
         PostPhoto existing = get(photoId);
 
         if (photoUrl != null && !photoUrl.trim().isEmpty()) {
@@ -127,8 +125,8 @@ public class PostPhotoService {
 
         if (photoOrder != null) {
             // Validar que no haya conflicto con otra foto del mismo post
-            PostPhoto conflict = repository.findByPostId_PostIdAndPhotoOrder(
-                existing.getPostId().getPostId(), photoOrder);
+           PostPhoto conflict = repository.findByPostId_PostIdAndPhotoOrder(
+    existing.getPostId().getPostId(), photoOrder);
             if (conflict != null && !conflict.equals(existing)) {
                 throw new IllegalArgumentException("Ya existe otra foto con ese orden para este post");
             }
