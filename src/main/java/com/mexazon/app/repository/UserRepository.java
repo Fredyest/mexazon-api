@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
@@ -18,6 +19,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findByEmail(String email);
     Optional<User> findByPhone(String phone);
     boolean existsByEmail(String email);
+    boolean existsByEmailIgnoreCase(String email);
     boolean existsByPhone(String phone);
     boolean existsByEmailOrPhone(String email, String phone);
 
@@ -41,14 +43,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Page<PublicUserView> findByNameStartsWithIgnoreCase(String name, Pageable pageable);
 
-    // --- Targeted update (avoids fetching the entity first) ---
+    // --- Targeted update (evita fetch previo) ---
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update User u set u.avatar = :avatar where u.userId = :id")
+    @Query("update User u set u.avatarUrl = :avatarUrl where u.userId = :id")
     int updateAvatar(@Param("id") Long id, @Param("avatar") String avatar);
-
-    // (Optional) Pessimistic lock if you have concurrent edits
+    // (Opcional) Pessimistic lock si hay ediciones concurrentes
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from User u where u.userId = :id")
     Optional<User> lockById(@Param("id") Long id);
-    	
 }

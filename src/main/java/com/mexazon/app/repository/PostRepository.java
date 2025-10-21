@@ -38,6 +38,9 @@ public interface PostRepository extends JpaRepository<Post, Long>{
     // Paginación (útil para feed o scroll infinito)
     Page<Post> findAllByReviewedBusiness(Business business, Pageable pageable);
 
+    // Paginación por autor (igual que ya tienes por negocio)
+    Page<Post> findAllByAuthor(User author, Pageable pageable);
+
     // --- Consulta personalizada: promedio de calificación de un negocio ---
     @Query("SELECT AVG(p.rating) FROM Post p WHERE p.reviewedBusiness = :business")
     Double getAverageRating(@Param("business") Business business);

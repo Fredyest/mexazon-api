@@ -54,9 +54,13 @@ public class Post {
     // --- Getters & Setters ---
     public Long getPostId() { return postId; }
 
+    public void setPostId(Long postId) { this.postId = postId; }
+
     public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
 
     public Business getReviewedBusiness() { return reviewedBusiness; }
+    public void setReviewedBusiness(Business reviewedBusiness) { this.reviewedBusiness = reviewedBusiness; }
 
     public int getRating() { return rating; }
     public void setRating(int rating) { this.rating = rating; }
@@ -65,4 +69,6 @@ public class Post {
     public void setDescription(String description) { this.description = description; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
 }

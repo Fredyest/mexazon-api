@@ -40,6 +40,10 @@ public class Dish {
         return business.getBusinessId();
     }
 
+    public void setBusinessId(Business business) {
+        this.business = business;
+    }
+
     // categoryId
     public Long getCategoryId() {
         return category.getCategoryId();
