@@ -19,6 +19,22 @@ public class PostPhoto {
     @Column(name = "photo_order")
     private Short photoOrder;
 
+	public Long getPhotoId() {
+		return photoId;
+	}
+
+	public void setPhotoId(Long photoId) {
+		this.photoId = photoId;
+	}
+
+	public Post getPostId() {
+		return postId;
+	}
+
+	public void setPostId(Post postId) {
+		this.postId = postId;
+	}
+
 	public String getPhotoUrl() {
 		return photoUrl;
 	}
@@ -34,6 +50,4 @@ public class PostPhoto {
 	public void setPhotoOrder(Short photoOrder) {
 		this.photoOrder = photoOrder;
 	}
-    
-    
 }
