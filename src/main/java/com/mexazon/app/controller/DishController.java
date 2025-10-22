@@ -1,188 +1,177 @@
 package com.mexazon.app.controller;
 
 import com.mexazon.app.model.Dish;
-import com.mexazon.app.service.impl.DishService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
+import com.mexazon.app.service.DishService;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * Controlador REST para la gestión de platillos ({@link Dish}) de un negocio.
+ * Controlador REST para gestionar los platillos ({@link Dish}) de los negocios.
+ * <p>
+ * Expone endpoints para crear y consultar platillos.
+ * Por diseño actual, no incluye operaciones de actualización ni eliminación
+ * desde el frontend, manteniendo el flujo de gestión controlado por el backend.
+ * </p>
  *
- * Base path: {@code /api/businesses/{businessId}/dishes}
- * Entidad principal: Platillo perteneciente a un negocio concreto.
+ * <h3>Responsabilidades principales:</h3>
+ * <ul>
+ *   <li>Registrar nuevos platillos con validaciones de precio y duplicados.</li>
+ *   <li>Consultar un platillo específico por su ID.</li>
+ *   <li>Listar platillos filtrados por negocio, categoría, texto y rango de precios.</li>
+ * </ul>
  *
- * Notas:
- * - Soporta paginación y ordenamiento vía Spring Data (parámetros {@code page}, {@code size}, {@code sort}).
- * - El precio se procesa como {@link Double} desde el body (validación de formato incluida).
- * - La creación/actualización valida nombre, precio y unicidad por negocio (en la capa de servicio).
+ * <h3>Diseño e implementación:</h3>
+ * <ul>
+ *   <li>Utiliza {@link DishService} para encapsular la lógica de negocio.</li>
+ *   <li>Incluye manejo explícito de errores comunes:
+ *     <ul>
+ *       <li><strong>400 Bad Request</strong>: precio inválido o datos incorrectos.</li>
+ *       <li><strong>409 Conflict</strong>: nombre duplicado dentro del mismo negocio.</li>
+ *       <li><strong>404 Not Found</strong>: platillo inexistente.</li>
+ *     </ul>
+ *   </li>
+ *   <li>Los filtros de búsqueda son opcionales y combinables en el endpoint de listado.</li>
+ * </ul>
+ *
+ * <h3>Ejemplos de uso:</h3>
+ *
+ * <h4>➤ Crear platillo</h4>
+ * <pre>
+ * POST /api/dishes
+ * Content-Type: application/json
+ * {
+ *   "businessId": 3,
+ *   "categoryId": 1,
+ *   "dishName": "Taco al pastor",
+ *   "description": "Tacos con piña y cebolla",
+ *   "price": 45.00,
+ *   "photoUrl": "https://cdn..."
+ * }
+ * </pre>
+ * <h4>Respuesta exitosa</h4>
+ * <pre>
+ * 201 Created
+ * {
+ *   "dishId": 12,
+ *   "businessId": 3,
+ *   "categoryId": 1,
+ *   "dishName": "Taco al pastor",
+ *   "price": 45.00,
+ *   "photoUrl": "https://cdn..."
+ * }
+ * </pre>
+ *
+ * <h4>➤ Consultar platillo</h4>
+ * <pre>
+ * GET /api/dishes/12
+ * </pre>
+ *
+ * <h4>➤ Listar platillos filtrados</h4>
+ * <pre>
+ * GET /api/dishes?businessId=3&categoryId=1&search=taco&minPrice=20&maxPrice=60
+ * </pre>
  */
 @RestController
-@RequestMapping("/api/businesses/{businessId}/dishes")
+@RequestMapping("/api/dishes")
 public class DishController {
 
+    /** Servicio encargado de la gestión de platillos. */
     private final DishService service;
 
-    public DishController(DishService service) { this.service = service; }
-
-    // ---------- READ ----------
     /**
-     * Lista los platillos de un negocio con paginación y filtro opcional por categoría.
+     * Constructor con inyección de dependencias.
      *
-     * Método/URL: GET /api/businesses/{businessId}/dishes
-     *
-     * Path params:
-     * - {@code businessId}: ID del negocio propietario de los platillos
-     *
-     * Query params (opcionales):
-     * - {@code categoryId}: ID de la categoría para filtrar
-     * - Paginación/orden: {@code page} (0..N), {@code size}, {@code sort} (p. ej. {@code sort=dishName,asc})
-     *
-     * Responses:
-     * - 200 OK: página de platillos
-     * - 404 Not Found: si el negocio no existe (validado indirectamente en el servicio/repo al crear/usar filtros)
-     *
-     * Ejemplo:
-     * <pre>
-     * curl "http://localhost:8080/api/businesses/1/dishes?categoryId=3&page=0&size=20&sort=dishName,asc"
-     * </pre>
+     * @param service servicio de negocio para platillos.
      */
-    @GetMapping
-    public Page<Dish> list(@PathVariable Long businessId,
-                           @RequestParam(required = false) Long categoryId,
-                           @PageableDefault(size = 20, sort = "dishName") Pageable pageable) {
-        return service.list(businessId, categoryId, pageable);
+    public DishController(DishService service) {
+        this.service = service;
     }
 
-    // ---------- CREATE ----------
+    // ---------- POST /api/dishes ----------
     /**
-     * Crea un nuevo platillo para un negocio.
+     * Crea un nuevo platillo en el sistema.
+     * <p>
+     * Valida que el precio sea mayor o igual a 0 y que el nombre del platillo
+     * no esté duplicado dentro del mismo negocio.
+     * </p>
      *
-     * Método/URL: POST /api/businesses/{businessId}/dishes
-     *
-     * Path params:
-     * - {@code businessId}: ID del negocio propietario
-     *
-     * Body:
-     * <pre>
-     * {
-     *   "categoryId": 3,            // obligatorio
-     *   "dishName": "Taco al pastor", // obligatorio
-     *   "description": "Con piña",
-     *   "price": 25.5,              // > 0 (Double)
-     *   "photoUrl": "https://..."
-     * }
-     * </pre>
-     *
-     * Responses:
-     * - 200 OK: platillo creado (el servicio retorna la entidad persistida)
-     * - 400 Bad Request: validaciones (nombre vacío, price <= 0, formato price inválido, categoría faltante, duplicado por negocio)
-     * - 404 Not Found: negocio o categoría inexistentes
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X POST "http://localhost:8080/api/businesses/1/dishes" \
-     *   -H "Content-Type: application/json" \
-     *   -d '{"categoryId":3,"dishName":"Taco al pastor","description":"Con piña","price":25.5,"photoUrl":"https://..."}'
-     * </pre>
+     * @param newDish entidad {@link Dish} enviada desde el cliente.
+     * @return {@code 201 Created} si se registró correctamente;
+     *         {@code 400 Bad Request} si los datos son inválidos;
+     *         {@code 409 Conflict} si el nombre del platillo ya existe.
      */
     @PostMapping
-    public Dish create(@PathVariable Long businessId, @RequestBody Map<String, Object> body) {
-        Long categoryId    = body.get("categoryId") == null ? null : Long.valueOf(body.get("categoryId").toString());
-        String dishName    = (String) body.get("dishName");
-        String description = (String) body.get("description");
-        String photoUrl    = (String) body.get("photoUrl");
-
-        // Convertimos a Double en lugar de BigDecimal
-        Double price = null;
-        if (body.get("price") != null) {
-            try {
-                price = Double.valueOf(body.get("price").toString());
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("El precio debe ser un número válido");
-            }
+    public ResponseEntity<?> create(@RequestBody Dish newDish) {
+        try {
+            Dish created = service.create(newDish);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    java.util.Map.of(
+                            "status", 400,
+                            "error", "Bad Request",
+                            "message", e.getMessage()
+                    )
+            );
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    java.util.Map.of(
+                            "status", 409,
+                            "error", "Conflict",
+                            "message", "Dish name already exists for this business"
+                    )
+            );
         }
-
-        return service.create(businessId, categoryId, dishName, description, price, photoUrl);
     }
 
-    // ---------- UPDATE ----------
+    // ---------- GET /api/dishes/{dishId} ----------
     /**
-     * Actualiza un platillo existente (actualización parcial permitida).
+     * Recupera un platillo por su identificador único.
      *
-     * Método/URL: PUT /api/businesses/{businessId}/dishes/{dishId}
-     *
-     * Path params:
-     * - {@code businessId}: ID del negocio propietario (contexto de la ruta)
-     * - {@code dishId}: ID del platillo a actualizar
-     *
-     * Body (campos opcionales; si un campo es null/no viene, se conserva):
-     * <pre>
-     * {
-     *   "categoryId": 4,
-     *   "dishName": "Taco de suadero",
-     *   "description": "Con salsa verde",
-     *   "price": 28.0,
-     *   "photoUrl": "https://..."
-     * }
-     * </pre>
-     *
-     * Responses:
-     * - 200 OK: platillo actualizado
-     * - 400 Bad Request: validaciones (precio <= 0, nombre duplicado en el mismo negocio, formato precio inválido)
-     * - 404 Not Found: platillo o categoría inexistentes
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X PUT "http://localhost:8080/api/businesses/1/dishes/12" \
-     *   -H "Content-Type: application/json" \
-     *   -d '{"dishName":"Taco de suadero","price":28.0}'
-     * </pre>
+     * @param dishId identificador del platillo.
+     * @return {@code 200 OK} con el platillo si existe,
+     *         o {@code 404 Not Found} si no fue encontrado.
      */
-    @PutMapping("/{dishId}")
-    public Dish update(@PathVariable Long businessId, @PathVariable Long dishId, @RequestBody Map<String, Object> body) {
-        Long categoryId    = body.get("categoryId") == null ? null : Long.valueOf(body.get("categoryId").toString());
-        String dishName    = (String) body.get("dishName");
-        String description = (String) body.get("description");
-        String photoUrl    = (String) body.get("photoUrl");
-
-        // Convertimos a Double en lugar de BigDecimal
-        Double price = null;
-        if (body.get("price") != null) {
-            try {
-                price = Double.valueOf(body.get("price").toString());
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("El precio debe ser un número válido");
-            }
-        }
-
-        return service.update(dishId, categoryId, dishName, description, price, photoUrl);
+    @GetMapping("/{dishId}")
+    public ResponseEntity<Dish> getById(@PathVariable Long dishId) {
+        return service.getById(dishId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    // ---------- DELETE ----------
+    // ---------- GET /api/dishes ----------
     /**
-     * Elimina un platillo por su identificador.
+     * Lista los platillos de un negocio, aplicando filtros opcionales.
+     * <p>
+     * Soporta los siguientes parámetros:
+     * <ul>
+     *   <li><b>businessId</b> (requerido): ID del negocio propietario.</li>
+     *   <li><b>categoryId</b> (opcional): ID de categoría de menú.</li>
+     *   <li><b>search</b> (opcional): texto de búsqueda parcial en nombre o descripción.</li>
+     *   <li><b>minPrice</b> y <b>maxPrice</b> (opcionales): rango de precios.</li>
+     * </ul>
+     * </p>
      *
-     * Método/URL: DELETE /api/businesses/{businessId}/dishes/{dishId}
-     *
-     * Path params:
-     * - {@code businessId}: ID del negocio (contexto)
-     * - {@code dishId}: ID del platillo a eliminar
-     *
-     * Responses:
-     * - 200 OK / 204 No Content: eliminado (según configuración)
-     * - 404 Not Found: platillo inexistente
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X DELETE "http://localhost:8080/api/businesses/1/dishes/12"
-     * </pre>
+     * @param businessId ID del negocio (obligatorio)
+     * @param categoryId ID de la categoría (opcional)
+     * @param search texto de búsqueda parcial (opcional)
+     * @param minPrice precio mínimo (opcional)
+     * @param maxPrice precio máximo (opcional)
+     * @return {@code 200 OK} con la lista de platillos filtrados.
      */
-    @DeleteMapping("/{dishId}")
-    public void delete(@PathVariable Long businessId, @PathVariable Long dishId) {
-        service.delete(dishId);
+    @GetMapping
+    public ResponseEntity<List<Dish>> list(
+            @RequestParam Long businessId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice
+    ) {
+        List<Dish> result = service.listByBusiness(businessId, categoryId, search, minPrice, maxPrice);
+        return ResponseEntity.ok(result);
     }
 }

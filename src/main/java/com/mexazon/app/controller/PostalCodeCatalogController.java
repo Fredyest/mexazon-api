@@ -1,213 +1,122 @@
 package com.mexazon.app.controller;
 
-import com.mexazon.app.model.PostalCodeCatalog;
-import com.mexazon.app.model.PostalCodeId;
-import com.mexazon.app.service.impl.PostalCodeCatalogService;
-import org.springframework.http.HttpStatus;
+import com.mexazon.app.service.AddressService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
- * Controlador REST para la gestión del catálogo de códigos postales ({@link PostalCodeCatalog}).
+ * Controlador REST para consultar el catálogo de códigos postales,
+ * colonias y alcaldías de la Ciudad de México (y potencialmente otras zonas).
+ * <p>
+ * Este endpoint es de solo lectura y permite al frontend llenar automáticamente
+ * la información de dirección cuando el usuario selecciona un código postal
+ * o una colonia específica.
+ * </p>
  *
- * Base path: {@code /api/postal-codes}
- *
- * Endpoints:
+ * <h3>Responsabilidades principales:</h3>
  * <ul>
- *   <li>Listar todos los registros del catálogo.</li>
- *   <li>Obtener un registro por clave compuesta (código postal + colonia).</li>
- *   <li>Crear un registro nuevo.</li>
- *   <li>Actualizar un registro existente.</li>
- *   <li>Eliminar un registro por su clave compuesta.</li>
+ *   <li>Consultar todas las colonias asociadas a un código postal.</li>
+ *   <li>Consultar una entrada específica (CP + colonia) para obtener su alcaldía.</li>
  * </ul>
  *
- * Notas:
- * - La entidad usa clave compuesta {@link PostalCodeId} (postalCode + colonia).
- * - Las validaciones/actualizaciones de campos viven en {@link PostalCodeCatalogService}.
+ * <h3>Diseño e implementación:</h3>
+ * <ul>
+ *   <li>Utiliza el servicio {@link AddressService} para acceder a la información del catálogo.</li>
+ *   <li>Opera únicamente con métodos <strong>GET</strong>, ya que el catálogo se carga desde el backend.</li>
+ *   <li>Maneja errores con mensajes descriptivos y códigos HTTP adecuados:
+ *     <ul>
+ *       <li><b>404 Not Found</b>: cuando no existe el código postal o colonia solicitada.</li>
+ *     </ul>
+ *   </li>
+ * </ul>
+ *
+ * <h3>Ejemplos de uso:</h3>
+ *
+ * <h4>➤ Consultar todas las colonias de un CP</h4>
+ * <pre>
+ * GET /api/postal-code-catalog?postalCode=04360
+ * </pre>
+ * <h4>Respuesta exitosa</h4>
+ * <pre>
+ * 200 OK
+ * {
+ *   "postalCode": "04360",
+ *   "colonias": [
+ *     { "colonia": "Coyoacán Centro", "alcaldia": "Coyoacán" },
+ *     { "colonia": "Del Carmen", "alcaldia": "Coyoacán" }
+ *   ]
+ * }
+ * </pre>
+ *
+ * <h4>➤ Consultar una colonia específica</h4>
+ * <pre>
+ * GET /api/postal-code-catalog/04360/Del%20Carmen
+ * </pre>
+ * <h4>Respuesta exitosa</h4>
+ * <pre>
+ * 200 OK
+ * {
+ *   "postalCode": "04360",
+ *   "colonia": "Del Carmen",
+ *   "alcaldia": "Coyoacán"
+ * }
+ * </pre>
  */
 @RestController
-@RequestMapping("/api/postal-codes")
+@RequestMapping("/api/postal-code-catalog")
 public class PostalCodeCatalogController {
 
-    private final PostalCodeCatalogService service;
+    /** Servicio encargado de la lógica del catálogo de direcciones. */
+    private final AddressService addressService;
 
-    public PostalCodeCatalogController(PostalCodeCatalogService service) {
-        this.service = service;
+    /**
+     * Constructor con inyección de dependencias.
+     *
+     * @param addressService servicio que maneja consultas del catálogo postal.
+     */
+    public PostalCodeCatalogController(AddressService addressService) {
+        this.addressService = addressService;
     }
 
-    // ---------- READ ----------
+    // ---------- GET /api/postal-code-catalog?postalCode=04360 ----------
     /**
-     * Lista todos los registros del catálogo de códigos postales.
+     * Devuelve todas las colonias asociadas a un código postal.
      *
-     * Método/URL: GET /api/postal-codes
-     *
-     * Responses:
-     * - 200 OK: lista de registros
-     *
-     * Ejemplo:
-     * <pre>
-     * curl "http://localhost:8080/api/postal-codes"
-     * </pre>
+     * @param postalCode código postal a consultar.
+     * @return {@code 200 OK} con lista de colonias y alcaldías,
+     *         o {@code 404 Not Found} si no se encuentra el CP.
      */
     @GetMapping
-    public ResponseEntity<List<PostalCodeCatalog>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<?> getByPostalCode(@RequestParam String postalCode) {
+        var list = addressService.findColoniasByPostalCode(postalCode);
+        if (list.isEmpty()) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("message", "Postal code not found"));
+        }
+        return ResponseEntity.ok(Map.of("postalCode", postalCode, "colonias", list));
     }
 
+    // ---------- GET /api/postal-code-catalog/{postalCode}/{colonia} ----------
     /**
-     * Obtiene un registro del catálogo por su clave compuesta.
+     * Devuelve una entrada exacta del catálogo (código postal + colonia).
      *
-     * Método/URL: GET /api/postal-codes/{postalCode}/{colonia}
-     *
-     * Path params:
-     * - {@code postalCode}: código postal (ej. "01000")
-     * - {@code colonia}: nombre de la colonia (URL-encoded si lleva espacios)
-     *
-     * Responses:
-     * - 200 OK: registro encontrado
-     * - 404 Not Found: si no existe
-     *
-     * Ejemplo:
-     * <pre>
-     * curl "http://localhost:8080/api/postal-codes/01000/San%20Ángel"
-     * </pre>
+     * @param postalCode código postal
+     * @param colonia nombre exacto de la colonia
+     * @return {@code 200 OK} con los datos del registro, o
+     *         {@code 404 Not Found} si no existe la combinación.
      */
     @GetMapping("/{postalCode}/{colonia}")
-    public ResponseEntity<PostalCodeCatalog> findById(@PathVariable String postalCode,
-                                                      @PathVariable String colonia) {
-        PostalCodeCatalog pc = service.findById(postalCode, colonia)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "PostalCodeCatalog no encontrado con id [" + postalCode + ", " + colonia + "]"));
-        return ResponseEntity.ok(pc);
-    }
-
-    // ---------- CREATE ----------
-    /**
-     * Crea un nuevo registro en el catálogo.
-     *
-     * Método/URL: POST /api/postal-codes
-     *
-     * Body:
-     * <pre>
-     * {
-     *   "postalCodeId": {
-     *     "postalCode": "01000",
-     *     "colonia": "San Ángel"
-     *   },
-     *   "alcaldia": "Álvaro Obregón"
-     * }
-     * </pre>
-     *
-     * Responses:
-     * - 201 Created: registro creado
-     * - 400 Bad Request: validaciones fallidas (si las agregas en el servicio)
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X POST "http://localhost:8080/api/postal-codes" \
-     *   -H "Content-Type: application/json" \
-     *   -d '{
-     *         "postalCodeId":{"postalCode":"01000","colonia":"San Ángel"},
-     *         "alcaldia":"Álvaro Obregón"
-     *       }'
-     * </pre>
-     */
-    @PostMapping
-    public ResponseEntity<PostalCodeCatalog> create(@RequestBody CreatePostalCodeRequest request) {
-        PostalCodeCatalog entity = new PostalCodeCatalog();
-        entity.setId(request.postalCodeId);
-        entity.setAlcaldia(request.alcaldia);
-        // Agrega más setters si tu modelo incluye otros campos
-
-        PostalCodeCatalog saved = service.save(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
-    // ---------- UPDATE ----------
-    /**
-     * Actualiza un registro existente del catálogo.
-     *
-     * Método/URL: PUT /api/postal-codes/{postalCode}/{colonia}
-     *
-     * Path params:
-     * - {@code postalCode}: código postal
-     * - {@code colonia}: colonia
-     *
-     * Body (campos opcionales; null conserva el valor actual en servicio si así lo implementas):
-     * <pre>
-     * {
-     *   "alcaldia": "Nueva Alcaldía"
-     * }
-     * </pre>
-     *
-     * Responses:
-     * - 200 OK: registro actualizado
-     * - 404 Not Found: registro no encontrado
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X PUT "http://localhost:8080/api/postal-codes/01000/San%20Ángel" \
-     *   -H "Content-Type: application/json" \
-     *   -d '{"alcaldia":"Álvaro Obregón"}'
-     * </pre>
-     */
-    @PutMapping("/{postalCode}/{colonia}")
-    public ResponseEntity<PostalCodeCatalog> update(@PathVariable String postalCode,
-                                                    @PathVariable String colonia,
-                                                    @RequestBody UpdatePostalCodeRequest request) {
-        PostalCodeCatalog updatedData = new PostalCodeCatalog();
-        updatedData.setAlcaldia(request.alcaldia);
-        // Agrega más setters si tu modelo incluye otros campos
-
-        PostalCodeCatalog updated = service.update(postalCode, colonia, updatedData);
-        return ResponseEntity.ok(updated);
-    }
-
-    // ---------- DELETE ----------
-    /**
-     * Elimina un registro del catálogo por su clave compuesta.
-     *
-     * Método/URL: DELETE /api/postal-codes/{postalCode}/{colonia}
-     *
-     * Path params:
-     * - {@code postalCode}: código postal
-     * - {@code colonia}: colonia
-     *
-     * Responses:
-     * - 204 No Content: eliminado
-     * - 404 Not Found: si no existe
-     *
-     * Ejemplo:
-     * <pre>
-     * curl -X DELETE "http://localhost:8080/api/postal-codes/01000/San%20Ángel"
-     * </pre>
-     */
-    @DeleteMapping("/{postalCode}/{colonia}")
-    public ResponseEntity<Void> delete(@PathVariable String postalCode,
-                                       @PathVariable String colonia) {
-        service.delete(postalCode, colonia);
-        return ResponseEntity.noContent().build();
-    }
-
-    // ========= DTOs de request =========
-
-    /**
-     * Payload para crear un registro del catálogo de códigos postales.
-     */
-    public static class CreatePostalCodeRequest {
-        /** Clave compuesta (código postal + colonia). */
-        public PostalCodeId postalCodeId;
-        /** Alcaldía/municipio asociado. */
-        public String alcaldia;
-    }
-
-    /**
-     * Payload para actualizar un registro del catálogo de códigos postales.
-     */
-    public static class UpdatePostalCodeRequest {
-        /** Nueva alcaldía/municipio (opcional). */
-        public String alcaldia;
+    public ResponseEntity<?> getExact(
+            @PathVariable String postalCode,
+            @PathVariable String colonia) {
+        try {
+            return ResponseEntity.ok(addressService.getCatalogEntry(postalCode, colonia));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("message", e.getMessage()));
+        }
     }
 }
