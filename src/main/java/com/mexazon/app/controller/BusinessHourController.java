@@ -95,7 +95,7 @@ public class BusinessHourController {
      * @return lista de {@link BusinessHour} con código 200 OK
      */
     @GetMapping("/{businessId}")
-    public ResponseEntity<List<BusinessHour>> getHoursByBusiness(@PathVariable Long businessId) {
+    public ResponseEntity<List<BusinessHour>> getHoursByBusiness(@PathVariable("businessId") Long businessId) {
         List<BusinessHour> hours = service.getByBusinessId(businessId);
         return ResponseEntity.ok(hours);
     }
@@ -110,8 +110,8 @@ public class BusinessHourController {
      */
     @GetMapping("/{businessId}/{dayOfWeek}")
     public ResponseEntity<BusinessHour> getHourByDay(
-            @PathVariable Long businessId,
-            @PathVariable String dayOfWeek) {
+            @PathVariable("businessId") Long businessId,
+            @PathVariable("dayOfWeek") String dayOfWeek) {
 
         BusinessHourId id = new BusinessHourId(businessId, dayOfWeek);
         return service.getById(id)
@@ -156,8 +156,8 @@ public class BusinessHourController {
      */
     @DeleteMapping("/{businessId}/{dayOfWeek}")
     public ResponseEntity<Void> deleteHour(
-            @PathVariable Long businessId,
-            @PathVariable String dayOfWeek) {
+            @PathVariable("businessId") Long businessId,
+            @PathVariable("dayOfWeek") String dayOfWeek) {
 
         BusinessHourId id = new BusinessHourId(businessId, dayOfWeek);
         service.deleteById(id);
@@ -172,7 +172,7 @@ public class BusinessHourController {
      * @return respuesta vacía con código 204 No Content
      */
     @DeleteMapping("/{businessId}")
-    public ResponseEntity<Void> deleteAll(@PathVariable Long businessId) {
+    public ResponseEntity<Void> deleteAll(@PathVariable("businessId") Long businessId) {
         service.deleteByBusinessId(businessId);
         return ResponseEntity.noContent().build();
     }

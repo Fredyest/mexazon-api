@@ -120,7 +120,7 @@ public class BusinessController {
      */
     @PatchMapping("/{businessId}")
     public ResponseEntity<Business> updateBusinessInfo(
-            @PathVariable Long businessId,
+            @PathVariable("businessId") Long businessId,
             @RequestBody Map<String, Object> updates) {
 
         String name = (String) updates.get("name");
@@ -139,7 +139,7 @@ public class BusinessController {
      * @return {@code 200 OK} con un objeto resumido, o {@code 404 Not Found} si no existe.
      */
     @GetMapping("/{businessId}")
-    public ResponseEntity<Map<String, Object>> getBusiness(@PathVariable Long businessId) {
+    public ResponseEntity<Map<String, Object>> getBusiness(@PathVariable("businessId") Long businessId) {
         return service.getBusinessById(businessId)
                 .map(b -> {
                     Map<String, Object> resp = new LinkedHashMap<>();
@@ -163,7 +163,7 @@ public class BusinessController {
      * @return {@code 200 OK} con la lista de {@link BusinessHour}.
      */
     @GetMapping("/{businessId}/hours")
-    public ResponseEntity<List<BusinessHour>> getBusinessHours(@PathVariable Long businessId) {
+    public ResponseEntity<List<BusinessHour>> getBusinessHours(@PathVariable("businessId") Long businessId) {
         List<BusinessHour> hours = service.getBusinessHours(businessId);
         return ResponseEntity.ok(hours);
     }

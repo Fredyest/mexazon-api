@@ -90,7 +90,7 @@ public class PostalCodeCatalogController {
      *         o {@code 404 Not Found} si no se encuentra el CP.
      */
     @GetMapping
-    public ResponseEntity<?> getByPostalCode(@RequestParam String postalCode) {
+    public ResponseEntity<?> getByPostalCode(@RequestParam("postalCode") String postalCode) {
         var list = addressService.findColoniasByPostalCode(postalCode);
         if (list.isEmpty()) {
             return ResponseEntity.status(404)
@@ -110,8 +110,8 @@ public class PostalCodeCatalogController {
      */
     @GetMapping("/{postalCode}/{colonia}")
     public ResponseEntity<?> getExact(
-            @PathVariable String postalCode,
-            @PathVariable String colonia) {
+            @PathVariable("postalCode") String postalCode,
+            @PathVariable("colonia") String colonia) {
         try {
             return ResponseEntity.ok(addressService.getCatalogEntry(postalCode, colonia));
         } catch (NoSuchElementException e) {

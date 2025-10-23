@@ -137,7 +137,7 @@ public class DishController {
      *         o {@code 404 Not Found} si no fue encontrado.
      */
     @GetMapping("/{dishId}")
-    public ResponseEntity<Dish> getById(@PathVariable Long dishId) {
+    public ResponseEntity<Dish> getById(@PathVariable("dishId") Long dishId) {
         return service.getById(dishId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());

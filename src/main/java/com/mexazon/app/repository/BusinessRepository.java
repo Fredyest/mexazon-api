@@ -1,7 +1,13 @@
 package com.mexazon.app.repository;
 
+import com.mexazon.app.dto.BusinessCard;
 import com.mexazon.app.model.Business;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -35,4 +41,41 @@ import org.springframework.stereotype.Repository;
  * <p><strong>Clave primaria:</strong> {@code Long}</p>
  */
 @Repository
-public interface BusinessRepository extends JpaRepository<Business, Long> {}
+public interface BusinessRepository
+        extends JpaRepository<Business, Long>, JpaSpecificationExecutor<Business> {
+
+    @Query(
+        value = """
+            select new com.mexazon.app.dto.BusinessCard(
+                b.businessId,
+                u.name,
+                u.avatarUrl,
+                0L,
+                coalesce(avg(p.rating), 0)
+            )
+            from Business b
+            join b.user u
+            left join Post p on p.reviewedBusinessId = b.businessId
+            where exists (
+              select 1 from UserAddress ua
+                join ua.catalogRef pc
+              where ua.userId = b.businessId
+                and lower(pc.alcaldia) = lower(:alcaldia)
+            )
+            group by b.businessId, u.name, u.avatarUrl
+            order by coalesce(avg(p.rating),0) desc
+            """,
+        countQuery = """
+            select count(b)
+            from Business b
+            where exists (
+              select 1 from UserAddress ua
+                join ua.catalogRef pc
+              where ua.userId = b.businessId
+                and lower(pc.alcaldia) = lower(:alcaldia)
+            )
+            """
+    )
+    Page<BusinessCard> findTopByAlcaldiaOrderByAvgRatingDesc(
+            @Param("alcaldia") String alcaldia, Pageable pageable);
+}

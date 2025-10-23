@@ -107,7 +107,7 @@ public class UserController {
      * @return {@code 200 OK} con el usuario o {@code 404 Not Found} si no existe.
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<User> getUserById(@PathVariable("userId") Long userId) {
         return service.getById(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
@@ -130,7 +130,7 @@ public class UserController {
      * @return {@code 200 OK} si se actualizó, o {@code 404 Not Found} si el usuario no existe.
      */
     @PatchMapping("/{userId}")
-    public ResponseEntity<User> updatePartial(@PathVariable Long userId, @RequestBody User updates) {
+    public ResponseEntity<User> updatePartial(@PathVariable("userId") Long userId, @RequestBody User updates) {
         try {
             User updated = service.updatePartial(userId, updates);
             return ResponseEntity.ok(updated);
@@ -147,7 +147,7 @@ public class UserController {
      * @return {@code 200 OK} con <code>{"exists": true|false}</code>.
      */
     @GetMapping("/exists")
-    public ResponseEntity<?> checkEmailExists(@RequestParam String email) {
+    public ResponseEntity<?> checkEmailExists(@RequestParam("email") String email) {
         boolean exists = service.existsByEmail(email);
         return ResponseEntity.ok().body(java.util.Map.of("exists", exists));
     }
