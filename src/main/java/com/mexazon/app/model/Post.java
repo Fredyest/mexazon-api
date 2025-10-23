@@ -47,16 +47,7 @@ import java.util.List;
     }
 )
 public class Post {
-<<<<<<< HEAD
-=======
 
-    /**
-     * Identificador único de la reseña.
-     * <p>
-     * Se genera automáticamente mediante {@link GenerationType#IDENTITY}.
-     * </p>
-     */
->>>>>>> b2ca499d4ac5348bc4caf5ec0f8daa26e9443afc
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
@@ -149,10 +140,9 @@ public class Post {
 
     /** @return Fecha y hora de creación de la reseña. */
     public LocalDateTime getCreatedAt() { return createdAt; }
-<<<<<<< HEAD
     
-}
-=======
+
+
 
     /** @return Lista de fotos asociadas a esta reseña. */
     public List<PostPhoto> getPhotos() { return photos; }
@@ -160,4 +150,4 @@ public class Post {
     /** @param photos asigna la lista de fotos asociadas. */
     public void setPhotos(List<PostPhoto> photos) { this.photos = photos; }
 }
->>>>>>> b2ca499d4ac5348bc4caf5ec0f8daa26e9443afc
+

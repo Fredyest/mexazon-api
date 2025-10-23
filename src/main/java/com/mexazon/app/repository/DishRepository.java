@@ -42,13 +42,6 @@ import java.util.List;
  */
 @Repository
 public interface DishRepository extends JpaRepository<Dish, Long> {
-<<<<<<< HEAD
-	  List<Dish> findAllByCategory(MenuCategory category);
-	  List<Dish> findAllByBusiness(Business business);
-	  List<Dish> findAllByCategoryCategoryId(Long categoryId);
-	  List<Dish> findAllByBusinessBusinessId(Long businessId);
-}
-=======
 
     /**
      * Obtiene todos los platillos registrados por un negocio.
@@ -96,5 +89,5 @@ public interface DishRepository extends JpaRepository<Dish, Long> {
      * @return {@code true} si existe un platillo con ese nombre, de lo contrario {@code false}.
      */
     boolean existsByBusinessIdAndDishNameIgnoreCase(Long businessId, String dishName);
-}
->>>>>>> b2ca499d4ac5348bc4caf5ec0f8daa26e9443afc
+	}
+
