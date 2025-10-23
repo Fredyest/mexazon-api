@@ -24,23 +24,24 @@ public class BusinessSearchController {
     // Ej: /api/businesses/search?q=tacos&alcaldia=Benito%20Ju%C3%A1rez&categories=tacos,tamales&page=0&size=20&sort=rating,desc
     @GetMapping("/search")
     public Page<BusinessCard> search(
-            @RequestParam(required = false, name = "q") String q,
-            @RequestParam(required = false) String alcaldia,
-            @RequestParam(required = false) List<String> categories,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size,
-            @RequestParam(defaultValue = "rating,desc") String sort
+            @RequestParam(name = "q", required = false) String q,
+            @RequestParam(name = "alcaldia", required = false) String alcaldia,
+            @RequestParam(name = "categories", required = false) List<String> categories,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "20") Integer size,
+            @RequestParam(name = "sort", defaultValue = "name,asc") String sort
     ) {
         return service.search(q, alcaldia, categories, page, size, sort);
     }
 
     @GetMapping("/top")
     public Page<BusinessCard> top(
-            @RequestParam Long userId,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "20") Integer size
+            @RequestParam(name = "userId") Long userId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "20") Integer size
     ) {
         return service.topInUserAlcaldia(userId, page, size);
     }
+
 
 }

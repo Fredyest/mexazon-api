@@ -69,10 +69,21 @@ public class BusinessSearchService {
 
         String[] parts = use.split(",");
         String field = parts[0].trim();
+
+        // Mapeo de alias de UI → propiedad JPA real
+        if (field.equalsIgnoreCase("name")) {
+            field = "user.name";          // <-- el nombre está en User
+        } else if (field.equalsIgnoreCase("rating")) {
+            // 'rating' no es columna en Business; evitamos romper la query.
+            // Puedes cambiar a lo que prefieras como fallback
+            field = "businessId";
+        }
+
         boolean desc = parts.length > 1 && parts[1].trim().equalsIgnoreCase("desc");
         Sort sort = desc ? Sort.by(field).descending() : Sort.by(field).ascending();
 
         return PageRequest.of(p, s, sort);
     }
+
 
 }

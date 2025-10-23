@@ -55,7 +55,7 @@ public interface BusinessRepository
             )
             from Business b
             join b.user u
-            left join Post p on p.business = b
+            left join Post p on p.reviewedBusinessId = b.businessId
             where exists (
               select 1 from UserAddress ua
                 join ua.catalogRef pc
