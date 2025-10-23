@@ -10,11 +10,8 @@ import com.mexazon.app.model.MenuCategory;
 import java.util.List;
 @Repository
 public interface DishRepository extends JpaRepository<Dish, Long> {
-
-	
 	  List<Dish> findAllByCategory(MenuCategory category);
 	  List<Dish> findAllByBusiness(Business business);
 	  List<Dish> findAllByCategoryCategoryId(Long categoryId);
 	  List<Dish> findAllByBusinessBusinessId(Long businessId);
-	 
 }
