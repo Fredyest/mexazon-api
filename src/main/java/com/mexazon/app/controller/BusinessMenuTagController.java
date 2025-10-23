@@ -84,7 +84,7 @@ public class BusinessMenuTagController {
      *         vacía si el negocio no tiene platillos registrados.
      */
     @GetMapping("/{businessId}/menu/categories")
-    public ResponseEntity<List<Map<String, Object>>> usedCategories(@PathVariable Long businessId) {
+    public ResponseEntity<List<Map<String, Object>>> usedCategories(@PathVariable("businessId") Long businessId) {
         // Obtener todos los platillos del negocio
         List<Dish> dishes = dishRepo.findByBusinessId(businessId);
 

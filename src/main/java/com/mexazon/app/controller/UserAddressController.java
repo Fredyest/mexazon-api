@@ -111,7 +111,7 @@ public class UserAddressController {
      *         o {@code 409 Conflict} si ya existe una dirección.
      */
     @PutMapping
-    public ResponseEntity<?> createAddress(@PathVariable Long userId, @RequestBody UserAddress address) {
+    public ResponseEntity<?> createAddress(@PathVariable("userId") Long userId, @RequestBody UserAddress address) {
         try {
             address.setUserId(userId);
             var saved = addressService.createAddress(address);
@@ -140,7 +140,7 @@ public class UserAddressController {
      * @return {@code 200 OK} con la dirección encontrada o {@code 404 Not Found} si no existe.
      */
     @GetMapping
-    public ResponseEntity<?> getAddress(@PathVariable Long userId) {
+    public ResponseEntity<?> getAddress(@PathVariable("userId") Long userId) {
         var opt = addressService.getUserAddress(userId);
         if (opt.isEmpty())
             return ResponseEntity.status(404).body(Map.of("message", "Address not found"));

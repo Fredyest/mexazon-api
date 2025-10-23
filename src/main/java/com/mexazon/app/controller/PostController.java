@@ -95,7 +95,7 @@ public class PostController {
      * @return {@code 200 OK} con {@link PostResponse} o {@code 404 Not Found}.
      */
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<?> getPost(@PathVariable Long postId) {
+    public ResponseEntity<?> getPost(@PathVariable("postId") Long postId) {
         try {
             return ResponseEntity.ok(service.getPost(postId));
         } catch (NoSuchElementException e) {
@@ -113,7 +113,7 @@ public class PostController {
      * @return {@code 201 Created} con lista de {@link PostResponse.Photo}; {@code 404} o {@code 409} según error.
      */
     @PostMapping("/posts/{postId}/photos")
-    public ResponseEntity<?> addPhotos(@PathVariable Long postId, @RequestBody AddPhotosRequest req) {
+    public ResponseEntity<?> addPhotos(@PathVariable("postId") Long postId, @RequestBody AddPhotosRequest req) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.addPhotos(postId, req));
         } catch (NoSuchElementException e) {
@@ -133,7 +133,7 @@ public class PostController {
      * @return {@code 204 No Content} si se eliminó; {@code 404 Not Found} si no existe.
      */
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<?> deletePost(@PathVariable Long postId) {
+    public ResponseEntity<?> deletePost(@PathVariable("") Long postId) {
         try {
             service.deletePost(postId);
             return ResponseEntity.noContent().build();
@@ -154,7 +154,7 @@ public class PostController {
      */
     @GetMapping("/businesses/{businessId}/posts")
     public ResponseEntity<Page<PostResponse>> listBusinessPosts(
-            @PathVariable Long businessId,
+            @PathVariable("businessId") Long businessId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(service.listBusinessPosts(businessId, page, size));
@@ -171,7 +171,7 @@ public class PostController {
      */
     @GetMapping("/users/{authorUserId}/posts")
     public ResponseEntity<Page<PostResponse>> listUserPosts(
-            @PathVariable Long authorUserId,
+            @PathVariable("authorUserId") Long authorUserId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(service.listUserPosts(authorUserId, page, size));
@@ -201,7 +201,7 @@ public class PostController {
      * @return {@link BusinessRatingResponse} con {@code 200 OK}
      */
     @GetMapping("/businesses/{businessId}/rating")
-    public ResponseEntity<BusinessRatingResponse> rating(@PathVariable Long businessId) {
+    public ResponseEntity<BusinessRatingResponse> rating(@PathVariable("businessId") Long businessId) {
         return ResponseEntity.ok(service.getBusinessRating(businessId));
     }
 }
