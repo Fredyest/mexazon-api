@@ -2,6 +2,9 @@ package com.mexazon.app.controller;
 
 import com.mexazon.app.model.User;
 import com.mexazon.app.service.UserService;
+
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,9 +97,9 @@ public class UserController {
      * @return {@code 201 Created} con el usuario creado.
      */
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User newUser) {
+    public ResponseEntity<Map<String, Object>> createUser(@RequestBody User newUser) {
         User created = service.createUser(newUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("userId", created.getUserId(),"message", "Usuario creado exitosamente"));
     }
 
     // ---------- GET /api/users/{userId} ----------

@@ -83,7 +83,7 @@ public class User {
      * Puede usarse para contacto o autenticación de dos factores.
      * </p>
      */
-    @Column(name = "phone", length = 15, nullable = false, unique = true)
+    @Column(name = "phone", length = 15, nullable = false, unique = false)
     private String phone;
 
     /**

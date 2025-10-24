@@ -80,32 +80,18 @@ public class BusinessController {
      *                y <code>businessHours</code> (lista de objetos con dayOfWeek, timeIn, timeOut, isWorking).
      * @return {@code 201 Created} con el {@link Business} creado.
      */
+    
     @PostMapping
     public ResponseEntity<Business> createBusiness(@RequestBody Map<String, Object> request) {
         Long businessId = Long.valueOf(request.get("businessId").toString());
-        Boolean isActive = (Boolean) request.getOrDefault("isActive", true);
+        boolean isActive = (Boolean) request.getOrDefault("isActive", true);
 
-        // Convertir businessHours a lista de objetos
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> hoursList = (List<Map<String, Object>>) request.get("businessHours");
-        List<BusinessHour> hours = new ArrayList<>();
-        for (Map<String, Object> h : hoursList) {
-            BusinessHour bh = new BusinessHour();
-            bh.setBusinessId(businessId);
-            bh.setDayOfWeek(h.get("dayOfWeek").toString());
-            bh.setTimeIn(h.get("timeIn") != null ? java.time.LocalTime.parse(h.get("timeIn").toString()) : null);
-            bh.setTimeOut(h.get("timeOut") != null ? java.time.LocalTime.parse(h.get("timeOut").toString()) : null);
-            bh.setWorking((Boolean) h.getOrDefault("isWorking", true));
-            hours.add(bh);
-        }
 
-        Business business = new Business();
-        business.setBusinessId(businessId);
-        business.setActive(isActive);
-
-        Business created = service.createBusiness(business, hours);
+        Business created = service.upsertBusinessAndHours(businessId, isActive, hoursList);
         return ResponseEntity.status(201).body(created);
-    }
+    }	
 
     // ---------- PATCH /api/businesses/{id} ----------
     /**

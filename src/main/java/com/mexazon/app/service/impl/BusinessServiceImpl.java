@@ -3,9 +3,15 @@ package com.mexazon.app.service.impl;
 import com.mexazon.app.model.*;
 import com.mexazon.app.repository.*;
 import com.mexazon.app.service.BusinessService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -158,5 +164,54 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public List<BusinessHour> getBusinessHours(Long businessId) {
         return hourRepository.findByBusinessId(businessId);
+    }
+    
+    @Transactional
+    public Business upsertBusinessAndHours(Long businessId, boolean isActive, List<Map<String,Object>> hoursList) {
+        // 1) Cargar o crear correctamente por @MapsId
+        Business business = businessRepository.findById(businessId).orElse(null);
+
+        if (business == null) {
+            // Debe existir el User con el MISMO id
+            User user = userRepository.findById(businessId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No existe User con id=" + businessId + " (requerido por @MapsId)"
+                ));
+
+            business = new Business();
+            business.setUser(user); // @MapsId copiará el id del user a business_id
+        }
+
+        business.setActive(isActive);
+        Business managed = businessRepository.save(business); // ahora sí, entidad "managed"
+
+
+        List<BusinessHour> toSave = new ArrayList<>();
+        for (Map<String,Object> h : hoursList) {
+            BusinessHour bh = new BusinessHour();
+            bh.setBusinessId(managed.getBusinessId());
+            bh.setDayOfWeek(normalize3((String) h.get("dayOfWeek"))); // "Mon","Tue",...
+            bh.setTimeIn(h.get("timeIn") != null ? LocalTime.parse(h.get("timeIn").toString()) : null);
+            bh.setTimeOut(h.get("timeOut") != null ? LocalTime.parse(h.get("timeOut").toString()) : null);
+            bh.setWorking(Boolean.TRUE.equals(h.getOrDefault("isWorking", true)));
+            toSave.add(bh);
+        }
+        hourRepository.saveAll(toSave);
+
+        return managed;
+    }
+
+    private String normalize3(String d) {
+        if (d == null) throw new IllegalArgumentException("dayOfWeek requerido");
+        switch (d.trim().toLowerCase()) {
+            case "mon": case "monday": return "Mon";
+            case "tue": case "tuesday": return "Tue";
+            case "wed": case "wednesday": return "Wed";
+            case "thu": case "thursday": return "Thu";
+            case "fri": case "friday": return "Fri";
+            case "sat": case "saturday": return "Sat";
+            case "sun": case "sunday": return "Sun";
+            default: throw new IllegalArgumentException("dayOfWeek inválido: " + d);
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.mexazon.app.service;
 import com.mexazon.app.model.Business;
 import com.mexazon.app.model.BusinessHour;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -88,4 +89,6 @@ public interface BusinessService {
      * @return lista de horarios asociados.
      */
     List<BusinessHour> getBusinessHours(Long businessId);
+    
+    Business upsertBusinessAndHours(Long businessId, boolean isActive, List<Map<String,Object>> hoursList);
 }
