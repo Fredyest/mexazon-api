@@ -54,11 +54,7 @@ public class PostController {
     /** Capa de servicio que encapsula la lógica de reseñas y fotos. */
     private final PostService service;
 
-    /**
-     * Constructor con inyección de dependencias.
-     *
-     * @param service servicio de reseñas
-     */
+    /** Constructor con inyección de dependencias. */
     public PostController(PostService service) {
         this.service = service;
     }
@@ -66,13 +62,6 @@ public class PostController {
     // ---------- POST /api/posts ----------
     /**
      * Crea una nueva reseña de usuario hacia un negocio.
-     * <p>
-     * Valida que el <code>rating</code> esté entre 1 y 5 y que
-     * no exista una reseña previa del mismo usuario para el mismo negocio.
-     * </p>
-     *
-     * @param req DTO {@link CreatePostRequest} con datos de la reseña (y fotos opcionales).
-     * @return {@code 201 Created} con {@link PostResponse}; {@code 400} o {@code 409} según error.
      */
     @PostMapping("/posts")
     public ResponseEntity<?> createPost(@RequestBody CreatePostRequest req) {
@@ -90,9 +79,6 @@ public class PostController {
     // ---------- GET /api/posts/{postId} ----------
     /**
      * Recupera una reseña por su identificador.
-     *
-     * @param postId id de la reseña
-     * @return {@code 200 OK} con {@link PostResponse} o {@code 404 Not Found}.
      */
     @GetMapping("/posts/{postId}")
     public ResponseEntity<?> getPost(@PathVariable("postId") Long postId) {
@@ -106,11 +92,7 @@ public class PostController {
 
     // ---------- POST /api/posts/{postId}/photos ----------
     /**
-     * Agrega fotografías a una reseña existente, respetando/validando el orden de las fotos.
-     *
-     * @param postId id de la reseña
-     * @param req DTO {@link AddPhotosRequest} con la lista de fotos a anexar
-     * @return {@code 201 Created} con lista de {@link PostResponse.Photo}; {@code 404} o {@code 409} según error.
+     * Agrega fotografías a una reseña existente.
      */
     @PostMapping("/posts/{postId}/photos")
     public ResponseEntity<?> addPhotos(@PathVariable("postId") Long postId, @RequestBody AddPhotosRequest req) {
@@ -128,12 +110,9 @@ public class PostController {
     // ---------- DELETE /api/posts/{postId} ----------
     /**
      * Elimina una reseña (sus fotos se eliminan por cascada).
-     *
-     * @param postId id de la reseña
-     * @return {@code 204 No Content} si se eliminó; {@code 404 Not Found} si no existe.
      */
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<?> deletePost(@PathVariable("") Long postId) {
+    public ResponseEntity<?> deletePost(@PathVariable("postId") Long postId) {
         try {
             service.deletePost(postId);
             return ResponseEntity.noContent().build();
@@ -146,49 +125,35 @@ public class PostController {
     // ---------- GET /api/businesses/{businessId}/posts ----------
     /**
      * Lista paginada de reseñas de un negocio, ordenadas por fecha (desc).
-     *
-     * @param businessId id del negocio
-     * @param page página (base 0)
-     * @param size tamaño de página
-     * @return {@link Page} de {@link PostResponse} con {@code 200 OK}
      */
     @GetMapping("/businesses/{businessId}/posts")
     public ResponseEntity<Page<PostResponse>> listBusinessPosts(
             @PathVariable("businessId") Long businessId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(service.listBusinessPosts(businessId, page, size));
     }
 
     // ---------- GET /api/users/{authorUserId}/posts ----------
     /**
      * Lista paginada de reseñas creadas por un usuario.
-     *
-     * @param authorUserId id del autor
-     * @param page página (base 0)
-     * @param size tamaño de página
-     * @return {@link Page} de {@link PostResponse} con {@code 200 OK}
      */
     @GetMapping("/users/{authorUserId}/posts")
     public ResponseEntity<Page<PostResponse>> listUserPosts(
             @PathVariable("authorUserId") Long authorUserId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(service.listUserPosts(authorUserId, page, size));
     }
 
     // ---------- GET /api/feed/posts ----------
     /**
      * Feed global de reseñas más recientes (paginado).
-     *
-     * @param page página (base 0)
-     * @param size tamaño de página
-     * @return {@link Page} de {@link PostResponse} con {@code 200 OK}
      */
     @GetMapping("/feed/posts")
     public ResponseEntity<Page<PostResponse>> feed(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         return ResponseEntity.ok(service.feed(page, size));
     }
 
@@ -196,9 +161,6 @@ public class PostController {
     /**
      * Devuelve el rating agregado de un negocio:
      * promedio, número total de reseñas y distribución por estrellas.
-     *
-     * @param businessId id del negocio
-     * @return {@link BusinessRatingResponse} con {@code 200 OK}
      */
     @GetMapping("/businesses/{businessId}/rating")
     public ResponseEntity<BusinessRatingResponse> rating(@PathVariable("businessId") Long businessId) {
