@@ -12,7 +12,6 @@ import com.mexazon.app.model.MenuCategory;
 import com.mexazon.app.model.UserAddress;
 
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 
