@@ -77,14 +77,11 @@ public class PostController {
     @PostMapping("/posts")
     public ResponseEntity<?> createPost(@RequestBody CreatePostRequest req) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.createPost(req));
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.createOrReplacePost(req));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(
                     java.util.Map.of("status", 400, "error", "Bad Request", "message", e.getMessage()));
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                    java.util.Map.of("status", 409, "error", "Conflict", "message", e.getMessage()));
-        }
+        } 
     }
 
     // ---------- GET /api/posts/{postId} ----------
@@ -111,7 +108,7 @@ public class PostController {
      * @param postId id de la reseña
      * @param req DTO {@link AddPhotosRequest} con la lista de fotos a anexar
      * @return {@code 201 Created} con lista de {@link PostResponse.Photo}; {@code 404} o {@code 409} según error.
-     */
+     
     @PostMapping("/posts/{postId}/photos")
     public ResponseEntity<?> addPhotos(@PathVariable("postId") Long postId, @RequestBody AddPhotosRequest req) {
         try {
@@ -124,7 +121,8 @@ public class PostController {
                     java.util.Map.of("status", 409, "error", "Conflict", "message", e.getMessage()));
         }
     }
-
+*/
+    
     // ---------- DELETE /api/posts/{postId} ----------
     /**
      * Elimina una reseña (sus fotos se eliminan por cascada).

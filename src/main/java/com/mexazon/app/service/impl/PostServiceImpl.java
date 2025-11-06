@@ -3,8 +3,8 @@ package com.mexazon.app.service.impl;
 import com.mexazon.app.dto.*;
 import com.mexazon.app.model.Post;
 import com.mexazon.app.model.PostPhoto;
-import com.mexazon.app.repository.PostPhotoRepository;
 import com.mexazon.app.repository.PostRepository;
+import com.mexazon.app.repository.UserRepository;
 import com.mexazon.app.service.PostService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
@@ -67,7 +67,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepo;
 
     /** Repositorio de fotografías asociadas a reseñas. */
-    private final PostPhotoRepository photoRepo;
+    private final UserRepository userRepo;
 
     /**
      * Constructor con inyección de dependencias.
@@ -75,9 +75,9 @@ public class PostServiceImpl implements PostService {
      * @param postRepo  repositorio de posts
      * @param photoRepo repositorio de fotos de post
      */
-    public PostServiceImpl(PostRepository postRepo, PostPhotoRepository photoRepo) {
+    public PostServiceImpl(PostRepository postRepo, UserRepository userRepo) {
         this.postRepo = postRepo;
-        this.photoRepo = photoRepo;
+        this.userRepo = userRepo;
     }
 
     // =========================
@@ -128,6 +128,11 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("rating must be between 1 and 5");
         }
     }
+    private void validateUser(Long idUser) {
+        if (userRepo.findById(idUser) == null) {
+            throw new IllegalArgumentException("Usuario no valido");
+        }
+    }
 
     // =========================
     // Implementación de PostService
@@ -138,34 +143,37 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     @Transactional
-    public PostResponse createPost(CreatePostRequest req) {
+    public PostResponse createOrReplacePost(CreatePostRequest req) {
         validateRating(req.rating);
+        validateUser(req.authorUserId);
+        validateUser(req.reviewedBusinessId);
+        
+        Post post = postRepo.findByAuthorUserIdAndReviewedBusinessId(req.authorUserId, req.reviewedBusinessId)
+            .map(existing -> {
+                existing.setRating(req.rating);
+                existing.setDescription(req.description);
 
-        // Evitar duplicado: un usuario solo puede reseñar un negocio una vez
-        if (postRepo.existsByAuthorUserIdAndReviewedBusinessId(req.authorUserId, req.reviewedBusinessId)) {
-            throw new DataIntegrityViolationException("User can only review a business once");
-        }
+                // 1) remove all old photos
+                existing.getPhotos().clear();
 
-        // Construir entidad Post
-        Post p = new Post();
-        p.setAuthorUserId(req.authorUserId);
-        p.setReviewedBusinessId(req.reviewedBusinessId);
-        p.setRating(req.rating);
-        p.setDescription(req.description);
+                // 2) ensure deletes are executed before we add new ones
+                postRepo.flush(); // <<— IMPORTANT
 
-        // Fotos iniciales (opcional) — se respetan órdenes provistos; si falta, se autoincrementa
-        if (req.photos != null && !req.photos.isEmpty()) {
-            int next = 1;
-            for (CreatePostRequest.PhotoItem it : req.photos) {
-                PostPhoto ph = new PostPhoto();
-                ph.setPost(p); // cascade ALL en Post.persistirá la foto
-                ph.setPhotoUrl(it.photoUrl);
-                ph.setPhotoOrder(it.photoOrder != null ? it.photoOrder : next++);
-                p.getPhotos().add(ph);
-            }
-        }
+                // 3) add new photos
+                addPhotos(existing, req.photos);
+                return existing;
+            })
+            .orElseGet(() -> {
+                Post p = new Post();
+                p.setAuthorUserId(req.authorUserId);
+                p.setReviewedBusinessId(req.reviewedBusinessId);
+                p.setRating(req.rating);
+                p.setDescription(req.description);
+                addPhotos(p, req.photos);
+                return p;
+            });
 
-        Post saved = postRepo.save(p);
+        Post saved = postRepo.save(post);
         return toResponse(saved);
     }
 
@@ -220,32 +228,24 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     @Transactional
-    public List<PostResponse.Photo> addPhotos(Long postId, AddPhotosRequest req) {
-        Post p = postRepo.findById(postId).orElseThrow(() -> new NoSuchElementException("Post not found"));
+	public void addPhotos(Post post, List<CreatePostRequest.PhotoItem> photos) {
+    	if (photos == null || photos.isEmpty()) return;
 
-        // Obtener último orden para asignar siguientes automáticamente
-        int nextOrder = photoRepo.findByPost_PostIdOrderByPhotoOrderAsc(postId)
-                .stream().mapToInt(PostPhoto::getPhotoOrder).max().orElse(0) + 1;
+        // Optional: normalize and guard duplicates
+        int next = 1;
+        Set<Integer> seen = new HashSet<>();
 
-        List<PostResponse.Photo> result = new ArrayList<>();
-        for (AddPhotosRequest.PhotoItem it : req.photos) {
-            Integer order = (it.photoOrder != null) ? it.photoOrder : nextOrder++;
-            if (photoRepo.existsByPost_PostIdAndPhotoOrder(postId, order)) {
-                throw new DataIntegrityViolationException("Photo order already exists for this post");
-            }
+        for (CreatePostRequest.PhotoItem it : photos) {
+            Integer order = (it.photoOrder != null ? it.photoOrder : next++);
+            // ensure unique per post
+            while (order == null || !seen.add(order)) order = next++;
+
             PostPhoto ph = new PostPhoto();
-            ph.setPost(p);
+            ph.setPost(post);
             ph.setPhotoUrl(it.photoUrl);
             ph.setPhotoOrder(order);
-            PostPhoto saved = photoRepo.save(ph);
-
-            PostResponse.Photo dto = new PostResponse.Photo();
-            dto.photoId = saved.getPhotoId();
-            dto.photoUrl = saved.getPhotoUrl();
-            dto.photoOrder = saved.getPhotoOrder();
-            result.add(dto);
+            post.getPhotos().add(ph);
         }
-        return result.stream().sorted(Comparator.comparingInt(a -> a.photoOrder)).toList();
     }
 
     /**

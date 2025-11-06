@@ -1,6 +1,9 @@
 package com.mexazon.app.repository;
 
 import com.mexazon.app.model.Post;
+
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -45,14 +48,15 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    /**
+	
+	/**
      * Verifica si un usuario ya ha publicado una reseña para un negocio específico.
      *
      * @param authorUserId identificador del usuario autor de la reseña.
      * @param reviewedBusinessId identificador del negocio reseñado.
      * @return {@code true} si ya existe una reseña para esa combinación usuario/negocio.
      */
-    boolean existsByAuthorUserIdAndReviewedBusinessId(Long authorUserId, Long reviewedBusinessId);
+	Optional<Post> findByAuthorUserIdAndReviewedBusinessId(Long authorUserId, Long reviewedBusinessId);
 
     /**
      * Recupera las reseñas asociadas a un negocio, ordenadas por fecha de creación descendente.
@@ -118,7 +122,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      * @return lista de pares {@code (rating, count)} con la distribución de calificaciones.
      */
     @Query("select p.rating as rating, count(p) as cnt "
-         + "from Post p where p.reviewedBusinessId = :businessId "
+    	 + "from Post p where p.reviewedBusinessId = :businessId "
          + "group by p.rating")
     java.util.List<Object[]> distributionByBusiness(Long businessId);
 }

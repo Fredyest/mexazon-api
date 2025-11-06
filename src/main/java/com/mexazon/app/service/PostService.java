@@ -1,6 +1,10 @@
 package com.mexazon.app.service;
 
 import com.mexazon.app.dto.*;
+import com.mexazon.app.model.Post;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 
 /**
@@ -56,13 +60,6 @@ import org.springframework.data.domain.Page;
  */
 public interface PostService {
 
-    /**
-     * Crea una nueva reseña de usuario hacia un negocio.
-     *
-     * @param req objeto {@link CreatePostRequest} con los datos de la reseña.
-     * @return la reseña creada como {@link PostResponse}.
-     */
-    PostResponse createPost(CreatePostRequest req);
 
     /**
      * Obtiene los detalles de una reseña específica.
@@ -110,7 +107,7 @@ public interface PostService {
      * @param req objeto {@link AddPhotosRequest} con la lista de URLs a agregar.
      * @return lista de fotos añadidas, representadas como {@link PostResponse.Photo}.
      */
-    java.util.List<PostResponse.Photo> addPhotos(Long postId, AddPhotosRequest req);
+    void addPhotos(Post post, List<CreatePostRequest.PhotoItem> photos);
 
     /**
      * Elimina una reseña y sus fotos asociadas.
@@ -129,4 +126,9 @@ public interface PostService {
      * @return respuesta {@link BusinessRatingResponse} con las métricas calculadas.
      */
     BusinessRatingResponse getBusinessRating(Long businessId);
+
+	/**
+	 * {@inheritDoc}
+	 */
+	PostResponse createOrReplacePost(CreatePostRequest req);
 }
